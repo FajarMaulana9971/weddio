@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "tb_m_friends")
 public class Friends extends BaseEntity {
+	@Enumerated(EnumType.STRING)
 	private FriendType friendType;
 
 	@OneToOne(mappedBy = "friend", cascade = CascadeType.ALL)

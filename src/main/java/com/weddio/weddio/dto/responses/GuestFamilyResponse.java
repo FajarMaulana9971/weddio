@@ -21,5 +21,7 @@ public class GuestFamilyResponse {
 
 	private FamilyFrom familyFrom;
 
+	private Long familyId;
+
 	private Long accountId;
 }

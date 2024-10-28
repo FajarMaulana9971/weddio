@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "tb_m_neighbor")
 public class Neighbors extends BaseEntity {
-	
+
 	@OneToOne(mappedBy = "neighbor", cascade = CascadeType.ALL)
 	@JsonProperty (access = JsonProperty.Access.WRITE_ONLY)
 	private Guest guest;
