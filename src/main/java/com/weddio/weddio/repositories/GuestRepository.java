@@ -10,8 +10,6 @@ import java.util.List;
 
 @Repository
 public interface GuestRepository extends BaseRepository<Guest, Long> {
-	List<Guest> findAllByAccountId(Long accountId);
-
 	@Query("SELECT g FROM Guest g WHERE g.account.id = :accountId")
 	List<Guest> findByAccountId(@Param ("accountId") Long accountId);
 }

@@ -18,7 +18,7 @@ public class GuestNeighborResponse {
 	private String whatsappNumber;
 
 	private String address;
-	
+
 	private Long neighborId;
 
 	private Long accountId;
