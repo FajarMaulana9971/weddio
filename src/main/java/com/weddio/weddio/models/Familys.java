@@ -14,8 +14,9 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "tb_m_familys")
 public class Familys extends BaseEntity {
+	@Enumerated(EnumType.STRING)
 	private FamilyFrom familyFrom;
-	
+
 	@OneToOne(mappedBy = "family", cascade = CascadeType.ALL)
 	@JsonProperty (access = JsonProperty.Access.WRITE_ONLY)
 	private Guest guest;

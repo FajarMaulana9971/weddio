@@ -4,4 +4,7 @@ import com.weddio.weddio.models.Guest;
 import com.weddio.weddio.services.interfaces.base.BaseService;
 
 public interface GuestService extends BaseService<Guest, Long> {
+	Object getGuestById(Long id);
+
+	Object getGuestByAccountId(Long accountId);
 }

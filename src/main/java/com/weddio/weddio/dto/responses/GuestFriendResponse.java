@@ -21,6 +21,8 @@ public class GuestFriendResponse {
 
 	private FriendType friendType;
 
+	private Long friendId;
+
 	private Long accountId;
-	
+
 }

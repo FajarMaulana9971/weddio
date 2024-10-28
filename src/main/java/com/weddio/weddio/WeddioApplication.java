@@ -8,7 +8,7 @@ public class WeddioApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(WeddioApplication.class, args);
-		System.out.println ("<=========== Serverapp is started ===========>");
+		System.out.println ("\n <=========== Serverapp is started ===========> \n");
 	}
 
 }
