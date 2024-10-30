@@ -13,8 +13,7 @@ public interface GuestService extends BaseService<Guest, Long> {
 	Object getGuestByAccountId(Long accountId);
 
 	Object getAllGuestByFilter(
-			String firstName,
-			String lastName,
+			String name,
 			FamilyFrom familyFrom,
 			FriendType friendType,
 			SearchType searchType,

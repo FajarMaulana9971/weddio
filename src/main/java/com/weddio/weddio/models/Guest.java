@@ -1,6 +1,8 @@
 package com.weddio.weddio.models;
 
 import com.weddio.weddio.models.base.BaseEntity;
+import com.weddio.weddio.models.enums.AttendenceStatus;
+import com.weddio.weddio.models.enums.Gender;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,11 +14,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table (name = "tb_m_guests")
 public class Guest extends BaseEntity {
-	@Column (length = 64)
-	private String firstName;
 
-	@Column(length = 64)
-	private String lastName;
+	private String name;
 
 	@Column(length = 32)
 	private String whatsappNumber;
@@ -24,15 +23,21 @@ public class Guest extends BaseEntity {
 	@Column(length = 64)
 	private String address;
 
-	@OneToOne
+	@Enumerated(EnumType.STRING)
+	private Gender gender;
+
+	@Enumerated(EnumType.STRING)
+	private AttendenceStatus attendenceStatus;
+
+	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn (name = "family_id")
 	private Familys family;
 
-	@OneToOne
+	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn (name = "friend_id")
 	private Friends friend;
 
-	@OneToOne
+	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn (name = "neighbor_id")
 	private Neighbors neighbor;
 

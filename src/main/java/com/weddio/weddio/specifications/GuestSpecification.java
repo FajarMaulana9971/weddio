@@ -6,14 +6,9 @@ import com.weddio.weddio.models.enums.FriendType;
 import org.springframework.data.jpa.domain.Specification;
 
 public class GuestSpecification {
-	public static Specification<Guest> hasFirstNameLike(String firstName) {
+	public static Specification<Guest> hasNameLike(String name) {
 		return ((root, query, criteriaBuilder) ->
-				criteriaBuilder.like (root.get("firstName"), "%" + firstName + "%"));
-	}
-
-	public static Specification<Guest> hasLastNameLike(String lastName) {
-		return (root, query, criteriaBuilder) ->
-				criteriaBuilder.like(root.get("lastName"), "%" + lastName + "%");
+				criteriaBuilder.like (root.get("name"), "%" + name + "%"));
 	}
 
 	public static Specification<Guest> hasFriendType(FriendType friendType) {
