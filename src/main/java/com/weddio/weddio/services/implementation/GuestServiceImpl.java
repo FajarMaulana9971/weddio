@@ -7,6 +7,7 @@ import com.weddio.weddio.dto.responses.GuestResponse;
 import com.weddio.weddio.dto.responses.pagination.GuestFamilyPaginationResponse;
 import com.weddio.weddio.dto.responses.pagination.GuestFriendPaginationResponse;
 import com.weddio.weddio.dto.responses.pagination.GuestNeighborPagination;
+import com.weddio.weddio.dto.responses.pagination.GuestResponsePagination;
 import com.weddio.weddio.models.Accounts;
 import com.weddio.weddio.models.Guest;
 import com.weddio.weddio.models.enums.FamilyFrom;
@@ -99,39 +100,80 @@ public class GuestServiceImpl extends BaseServiceImpl<Guest, Long> implements Gu
 			int currentPage,
 			int pageSize,
 			UriComponentsBuilder uriComponentsBuilder
-	){
-		Specification<Guest> spec = Specification.where (null);
+	) {
+		Specification<Guest> spec = Specification.where(null);
 
-		if(name != null){
-			spec = spec.and (GuestSpecification.hasNameLike (name));
+		if (name != null) {
+			spec = spec.and(GuestSpecification.hasNameLike(name));
 		}
-		if(familyFrom != null){
-			spec = spec.and (GuestSpecification.hasFamilyFrom (familyFrom));
+		if (familyFrom != null) {
+			spec = spec.and(GuestSpecification.hasFamilyFrom(familyFrom));
 		}
-		if(friendType != null){
-			spec = spec.and (GuestSpecification.hasFriendType (friendType));
+		if (friendType != null) {
+			spec = spec.and(GuestSpecification.hasFriendType(friendType));
 		}
 
-		if(searchType != null){
-			switch (searchType){
-				case FAMILY :
-					spec = spec.and (GuestSpecification.isFamily ());
-					break;
+		if (searchType != null) {
+			switch (searchType) {
+				case FAMILY:
+					spec = spec.and(GuestSpecification.isFamily());
+					Page<Guest> familyPage = guestRepository.findAll(spec, PageRequest.of(currentPage, pageSize));
+					PageData familyPageData = PageData.pagination(familyPage.getTotalElements(), currentPage, pageSize, uriComponentsBuilder);
+
+					List<GuestFamilyResponse> familyResponses = familyPage.getContent().stream()
+							.map(guest -> {
+								GuestFamilyResponse response = modelMapper.map(guest, GuestFamilyResponse.class);
+								response.setFamilyFrom(guest.getFamily().getFamilyFrom());
+								response.setFamilyId(guest.getFamily().getId());
+								response.setAccountId(guest.getAccount().getId());
+								return response;
+							})
+							.collect(Collectors.toList());
+
+					return new GuestFamilyPaginationResponse(familyPageData, familyResponses);
+
 				case FRIEND:
-					spec = spec.and (GuestSpecification.isFriend ());
-					break;
+					spec = spec.and(GuestSpecification.isFriend());
+					Page<Guest> friendPage = guestRepository.findAll(spec, PageRequest.of(currentPage, pageSize));
+					PageData friendPageData = PageData.pagination(friendPage.getTotalElements(), currentPage, pageSize, uriComponentsBuilder);
+
+					List<GuestFriendResponse> friendResponses = friendPage.getContent().stream()
+							.map(guest -> {
+								GuestFriendResponse response = modelMapper.map(guest, GuestFriendResponse.class);
+								response.setFriendType(guest.getFriend().getFriendType());
+								response.setFriendId(guest.getFriend().getId());
+								response.setAccountId(guest.getAccount().getId());
+								return response;
+							})
+							.collect(Collectors.toList());
+
+					return new GuestFriendPaginationResponse(friendPageData, friendResponses);
+
 				case NEIGHBOR:
-					spec = spec.and (GuestSpecification.isNeighbor ());
-					break;
+					spec = spec.and(GuestSpecification.isNeighbor());
+					Page<Guest> neighborPage = guestRepository.findAll(spec, PageRequest.of(currentPage, pageSize));
+					PageData neighborPageData = PageData.pagination(neighborPage.getTotalElements(), currentPage, pageSize, uriComponentsBuilder);
+
+					List<GuestNeighborResponse> neighborResponses = neighborPage.getContent().stream()
+							.map(guest -> {
+								GuestNeighborResponse response = modelMapper.map(guest, GuestNeighborResponse.class);
+								response.setNeighborId(guest.getNeighbor().getId());
+								response.setAccountId(guest.getAccount().getId());
+								return response;
+							})
+							.collect(Collectors.toList());
+
+					return new GuestNeighborPagination(neighborPageData, neighborResponses);
+
 				default:
-					throw new ResponseStatusException (HttpStatus.BAD_REQUEST, "Search type not supported");
+					throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Search type not supported");
 			}
 		}
 
 		Page<Guest> guestPage = guestRepository.findAll(spec, PageRequest.of(currentPage, pageSize));
-		PageData pageData = PageData.pagination (guestPage.getTotalElements (), currentPage, pageSize, uriComponentsBuilder);
+		PageData pageData = PageData.pagination(guestPage.getTotalElements(), currentPage, pageSize, uriComponentsBuilder);
 
-		return guestPage.getContent().stream()
+		List<GuestResponse> guestResponses = guestPage.getContent().stream()
 				.map(guest -> {
 					GuestResponse response = modelMapper.map(guest, GuestResponse.class);
 					response.setFamilyId(guest.getFamily() != null ? guest.getFamily().getId() : null);
@@ -143,5 +185,7 @@ public class GuestServiceImpl extends BaseServiceImpl<Guest, Long> implements Gu
 				})
 				.collect(Collectors.toList());
 
+		return new GuestResponsePagination (pageData, guestResponses);
 	}
+
 }
