@@ -1,6 +1,7 @@
 package com.weddio.weddio.dto.responses;
 
 import com.weddio.weddio.models.enums.FamilyFrom;
+import com.weddio.weddio.models.enums.FriendType;
 import com.weddio.weddio.models.enums.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GuestFamilyResponse {
+public class GuestRessponse {
 	private Long id;
 
 	private String name;
@@ -20,9 +21,15 @@ public class GuestFamilyResponse {
 
 	private Gender gender;
 
-	private FamilyFrom familyFrom;
+	private Long accountId;
 
 	private Long familyId;
 
-	private Long accountId;
+	private FamilyFrom familyFrom;
+
+	private Long friendId;
+
+	private FriendType friendType;
+
+	private Long neighborId;
 }
