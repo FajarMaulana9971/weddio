@@ -3,6 +3,7 @@ package com.weddio.weddio.services.implementation;
 import com.weddio.weddio.dto.responses.GuestFamilyResponse;
 import com.weddio.weddio.dto.responses.GuestFriendResponse;
 import com.weddio.weddio.dto.responses.GuestNeighborResponse;
+import com.weddio.weddio.dto.responses.GuestResponse;
 import com.weddio.weddio.dto.responses.pagination.GuestFamilyPaginationResponse;
 import com.weddio.weddio.dto.responses.pagination.GuestFriendPaginationResponse;
 import com.weddio.weddio.dto.responses.pagination.GuestNeighborPagination;
@@ -91,8 +92,7 @@ public class GuestServiceImpl extends BaseServiceImpl<Guest, Long> implements Gu
 	}
 
 	public Object getAllGuestByFilter(
-			String firstName,
-			String lastName,
+			String name,
 			FamilyFrom familyFrom,
 			FriendType friendType,
 			SearchType searchType,
@@ -102,11 +102,8 @@ public class GuestServiceImpl extends BaseServiceImpl<Guest, Long> implements Gu
 	){
 		Specification<Guest> spec = Specification.where (null);
 
-		if(firstName != null){
-			spec = spec.and (GuestSpecification.hasFirstNameLike (firstName));
-		}
-		if(lastName != null){
-			spec = spec.and (GuestSpecification.hasLastNameLike (lastName));
+		if(name != null){
+			spec = spec.and (GuestSpecification.hasNameLike (name));
 		}
 		if(familyFrom != null){
 			spec = spec.and (GuestSpecification.hasFamilyFrom (familyFrom));
@@ -115,36 +112,36 @@ public class GuestServiceImpl extends BaseServiceImpl<Guest, Long> implements Gu
 			spec = spec.and (GuestSpecification.hasFriendType (friendType));
 		}
 
-		switch (searchType){
-			case FAMILY :
-				spec = spec.and (GuestSpecification.isFamily ());
-				break;
-			case FRIEND:
-				spec = spec.and (GuestSpecification.isFriend ());
-				break;
-			case NEIGHBOR:
-				spec = spec.and (GuestSpecification.isNeighbor ());
-				break;
-			default:
-				throw new ResponseStatusException (HttpStatus.BAD_REQUEST, "Search type not supported");
+		if(searchType != null){
+			switch (searchType){
+				case FAMILY :
+					spec = spec.and (GuestSpecification.isFamily ());
+					break;
+				case FRIEND:
+					spec = spec.and (GuestSpecification.isFriend ());
+					break;
+				case NEIGHBOR:
+					spec = spec.and (GuestSpecification.isNeighbor ());
+					break;
+				default:
+					throw new ResponseStatusException (HttpStatus.BAD_REQUEST, "Search type not supported");
+			}
 		}
 
 		Page<Guest> guestPage = guestRepository.findAll(spec, PageRequest.of(currentPage, pageSize));
 		PageData pageData = PageData.pagination (guestPage.getTotalElements (), currentPage, pageSize, uriComponentsBuilder);
 
-		switch (searchType){
-			case FAMILY :
-				List<GuestFamilyResponse> familyResponses = guestPage.getContent ().stream ().map (guest -> modelMapper.map (guest, GuestFamilyResponse.class)).collect(Collectors.toList());
-				return new GuestFamilyPaginationResponse (pageData, familyResponses);
-			case FRIEND:
-				List<GuestFriendResponse> friendResponses = guestPage.getContent ().stream ().map (guest -> modelMapper.map (guest, GuestFriendResponse.class)).collect(Collectors.toList());
-				return new GuestFriendPaginationResponse (pageData, friendResponses);
-			case NEIGHBOR:
-				List<GuestNeighborResponse>neighborResponses = guestPage.getContent ().stream ().map (guest -> modelMapper.map (guest, GuestNeighborResponse.class)).collect(Collectors.toList());
-				return new GuestNeighborPagination (pageData, neighborResponses);
-			default:
-				throw new ResponseStatusException (HttpStatus.BAD_REQUEST, "Search type not supported");
-		}
+		return guestPage.getContent().stream()
+				.map(guest -> {
+					GuestResponse response = modelMapper.map(guest, GuestResponse.class);
+					response.setFamilyId(guest.getFamily() != null ? guest.getFamily().getId() : null);
+					response.setFamilyFrom(guest.getFamily() != null ? guest.getFamily().getFamilyFrom() : null);
+					response.setFriendId(guest.getFriend() != null ? guest.getFriend().getId() : null);
+					response.setFriendType(guest.getFriend() != null ? guest.getFriend().getFriendType() : null);
+					response.setNeighborId(guest.getNeighbor() != null ? guest.getNeighbor().getId() : null);
+					return response;
+				})
+				.collect(Collectors.toList());
 
 	}
 }

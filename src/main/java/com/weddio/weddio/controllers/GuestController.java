@@ -27,17 +27,16 @@ public class GuestController {
 
 	@GetMapping("/filter")
 	public Object getAllGuestByFilter(
-			@RequestParam (required = false) String firstName,
-			@RequestParam(required = false) String lastName,
+			@RequestParam (required = false) String name,
 			@RequestParam(required = false) FamilyFrom familyFrom,
 			@RequestParam(required = false) FriendType friendType,
-			@RequestParam SearchType searchType,
+			@RequestParam (required = false) SearchType searchType,
 			@RequestParam(defaultValue = "0") int currentPage,
 			@RequestParam(defaultValue = "10") int pageSize,
 			UriComponentsBuilder uriBuilder
 	) {
 		return guestService.getAllGuestByFilter(
-				firstName, lastName, familyFrom, friendType, searchType, currentPage, pageSize, uriBuilder
+				name, familyFrom, friendType, searchType, currentPage, pageSize, uriBuilder
 		);
 	}
 }
