@@ -1,10 +1,7 @@
 package com.weddio.weddio.services.implementation;
 
 import com.weddio.weddio.models.*;
-import com.weddio.weddio.models.enums.AttendenceStatus;
-import com.weddio.weddio.models.enums.FamilyFrom;
-import com.weddio.weddio.models.enums.FriendType;
-import com.weddio.weddio.models.enums.Gender;
+import com.weddio.weddio.models.enums.*;
 import com.weddio.weddio.repositories.AccountRepository;
 import com.weddio.weddio.repositories.GuestRepository;
 import com.weddio.weddio.services.implementation.base.BaseServiceImpl;
@@ -43,17 +40,19 @@ public class AccountServiceImpl extends BaseServiceImpl<Accounts, Long> implemen
 			String name = getCellStringValue(row.getCell(0));
 			String gender = getCellStringValue (row.getCell(1)).trim ();
 			String whatsappNumber = getCellStringValue(row.getCell(2));
-			String address = getCellStringValue(row.getCell(3));
+			String specialNickname = getCellStringValue(row.getCell(3));
+			String address = getCellStringValue(row.getCell(4));
 
-			String familyFrom = getCellStringValue(row.getCell(4));
-			String friendType = getCellStringValue(row.getCell(5));
-			String isNeighbor = getCellStringValue(row.getCell(6));
+			String familyFrom = getCellStringValue(row.getCell(5));
+			String friendType = getCellStringValue(row.getCell(6));
+			String isNeighbor = getCellStringValue(row.getCell(7));
 
 			Guest guest = new Guest();
 			guest.setName (name);
 			guest.setGender (Gender.valueOf (gender.toUpperCase ()));
 			guest.setWhatsappNumber(whatsappNumber);
 			guest.setAttendenceStatus (AttendenceStatus.DRAFT);
+			guest.setSpecialNickname (specialNickname);
 			guest.setAddress(address);
 			guest.setAccount(account);
 
