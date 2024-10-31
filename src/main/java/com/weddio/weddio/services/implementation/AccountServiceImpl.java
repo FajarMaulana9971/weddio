@@ -6,12 +6,12 @@ import com.weddio.weddio.dto.responses.GuestNeighborResponse;
 import com.weddio.weddio.dto.responses.GuestResponse;
 import com.weddio.weddio.models.*;
 import com.weddio.weddio.models.enums.*;
-import com.weddio.weddio.repositories.AccountRepository;
 import com.weddio.weddio.repositories.GuestRepository;
 import com.weddio.weddio.services.implementation.base.BaseServiceImpl;
 import com.weddio.weddio.services.interfaces.AccountService;
 import lombok.AllArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class AccountServiceImpl extends BaseServiceImpl<Accounts, Long> implements AccountService {
+	private final ModelMapper modelMapper;
 	private GuestRepository guestRepository;
 
 	private String getCellStringValue(Cell cell) {
@@ -94,33 +95,16 @@ public class AccountServiceImpl extends BaseServiceImpl<Accounts, Long> implemen
 		}
 		workbook.close();
 
-		List<Object> guestResponses = importedGuests.stream().map(guest -> {
+		return importedGuests.stream().map(guest -> {
 			if (guest.getFamily() != null) {
-				GuestFamilyResponse response = new GuestFamilyResponse();
-				response.setFamilyFrom(guest.getFamily().getFamilyFrom());
-				response.setFamilyId(guest.getFamily().getId());
-				response.setAccountId(accountId);
-				return response;
+				return modelMapper.map(guest, GuestFamilyResponse.class);
 			} else if (guest.getFriend() != null) {
-				GuestFriendResponse response = new GuestFriendResponse();
-				response.setFriendType(guest.getFriend().getFriendType());
-				response.setFriendId(guest.getFriend().getId());
-				response.setAccountId(accountId);
-				return response;
+				return modelMapper.map(guest, GuestFriendResponse.class);
 			} else if (guest.getNeighbor() != null) {
-				GuestNeighborResponse response = new GuestNeighborResponse();
-				response.setNeighborId(guest.getNeighbor().getId());
-				response.setAccountId(accountId);
-				return response;
+				return modelMapper.map(guest, GuestNeighborResponse.class);
 			} else {
-				GuestResponse response = new GuestResponse();
-				response.setFamilyFrom(guest.getFamily() != null ? guest.getFamily().getFamilyFrom() : null);
-				response.setFriendType(guest.getFriend() != null ? guest.getFriend().getFriendType() : null);
-				response.setNeighborId(guest.getNeighbor() != null ? guest.getNeighbor().getId() : null);
-				return response;
+				return modelMapper.map(guest, GuestResponse.class);
 			}
 		}).collect(Collectors.toList());
-
-		return guestResponses;
 	}
 }
