@@ -1,5 +1,9 @@
 package com.weddio.weddio.services.implementation;
 
+import com.weddio.weddio.dto.responses.GuestFamilyResponse;
+import com.weddio.weddio.dto.responses.GuestFriendResponse;
+import com.weddio.weddio.dto.responses.GuestNeighborResponse;
+import com.weddio.weddio.dto.responses.GuestResponse;
 import com.weddio.weddio.models.*;
 import com.weddio.weddio.models.enums.*;
 import com.weddio.weddio.repositories.AccountRepository;
@@ -11,10 +15,13 @@ import org.apache.poi.ss.usermodel.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @AllArgsConstructor
 public class AccountServiceImpl extends BaseServiceImpl<Accounts, Long> implements AccountService {
-	private AccountRepository accountRepository;
 	private GuestRepository guestRepository;
 
 	private String getCellStringValue(Cell cell) {
@@ -27,40 +34,40 @@ public class AccountServiceImpl extends BaseServiceImpl<Accounts, Long> implemen
 		}
 	}
 
-	public void importGuests(Long accountId, MultipartFile file) throws Exception {
+	public Object importGuests(Long accountId, MultipartFile file) throws Exception {
 		Accounts account = findByIdFromRepo(accountId);
 
 		Workbook workbook = WorkbookFactory.create(file.getInputStream());
 		Sheet sheet = workbook.getSheetAt(0);
+		List<Guest> importedGuests = new ArrayList<> ();
 
 		for (Row row : sheet) {
 			if (row.getRowNum() == 0) {
 				continue;
 			}
+
 			String name = getCellStringValue(row.getCell(0));
-			String gender = getCellStringValue (row.getCell(1)).trim ();
+			String gender = getCellStringValue(row.getCell(1)).trim();
 			String whatsappNumber = getCellStringValue(row.getCell(2));
 			String specialNickname = getCellStringValue(row.getCell(3));
 			String address = getCellStringValue(row.getCell(4));
-
 			String familyFrom = getCellStringValue(row.getCell(5));
 			String friendType = getCellStringValue(row.getCell(6));
 			String isNeighbor = getCellStringValue(row.getCell(7));
 
 			Guest guest = new Guest();
-			guest.setName (name);
-			guest.setGender (Gender.valueOf (gender.toUpperCase ()));
+			guest.setName(name);
+			guest.setGender(Gender.valueOf(gender.toUpperCase()));
 			guest.setWhatsappNumber(whatsappNumber);
-			guest.setAttendenceStatus (AttendenceStatus.DRAFT);
-			guest.setSpecialNickname (specialNickname);
+			guest.setAttendenceStatus(AttendenceStatus.DRAFT);
+			guest.setSpecialNickname(specialNickname);
 			guest.setAddress(address);
 			guest.setAccount(account);
 
 			if (familyFrom != null) {
-				String familyFromTrimmed = familyFrom.trim();
 				try {
 					Familys family = new Familys();
-					family.setFamilyFrom(FamilyFrom.valueOf(familyFromTrimmed.toUpperCase()));
+					family.setFamilyFrom(FamilyFrom.valueOf(familyFrom.trim().toUpperCase()));
 					guest.setFamily(family);
 				} catch (IllegalArgumentException e) {
 					throw new RuntimeException("Value family from is not valid, only mother or father.");
@@ -68,13 +75,12 @@ public class AccountServiceImpl extends BaseServiceImpl<Accounts, Long> implemen
 			}
 
 			if (friendType != null) {
-				String friendTypeTrimmed = friendType.trim();
 				try {
 					Friends friend = new Friends();
-					friend.setFriendType(FriendType.valueOf(friendTypeTrimmed.toUpperCase()));
+					friend.setFriendType(FriendType.valueOf(friendType.trim().toUpperCase()));
 					guest.setFriend(friend);
 				} catch (IllegalArgumentException e) {
-					throw new RuntimeException("Value friend type from is not valid");
+					throw new RuntimeException("Value friend type is not valid.");
 				}
 			}
 
@@ -82,9 +88,39 @@ public class AccountServiceImpl extends BaseServiceImpl<Accounts, Long> implemen
 				Neighbors neighbor = new Neighbors();
 				guest.setNeighbor(neighbor);
 			}
+
 			guestRepository.save(guest);
+			importedGuests.add(guest);
 		}
 		workbook.close();
-	}
 
+		List<Object> guestResponses = importedGuests.stream().map(guest -> {
+			if (guest.getFamily() != null) {
+				GuestFamilyResponse response = new GuestFamilyResponse();
+				response.setFamilyFrom(guest.getFamily().getFamilyFrom());
+				response.setFamilyId(guest.getFamily().getId());
+				response.setAccountId(accountId);
+				return response;
+			} else if (guest.getFriend() != null) {
+				GuestFriendResponse response = new GuestFriendResponse();
+				response.setFriendType(guest.getFriend().getFriendType());
+				response.setFriendId(guest.getFriend().getId());
+				response.setAccountId(accountId);
+				return response;
+			} else if (guest.getNeighbor() != null) {
+				GuestNeighborResponse response = new GuestNeighborResponse();
+				response.setNeighborId(guest.getNeighbor().getId());
+				response.setAccountId(accountId);
+				return response;
+			} else {
+				GuestResponse response = new GuestResponse();
+				response.setFamilyFrom(guest.getFamily() != null ? guest.getFamily().getFamilyFrom() : null);
+				response.setFriendType(guest.getFriend() != null ? guest.getFriend().getFriendType() : null);
+				response.setNeighborId(guest.getNeighbor() != null ? guest.getNeighbor().getId() : null);
+				return response;
+			}
+		}).collect(Collectors.toList());
+
+		return guestResponses;
+	}
 }
