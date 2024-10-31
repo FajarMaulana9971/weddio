@@ -5,5 +5,5 @@ import com.weddio.weddio.services.interfaces.base.BaseService;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface AccountService extends BaseService<Accounts, Long> {
-	void importGuests(Long accountId, MultipartFile file) throws Exception;
+	Object importGuests(Long accountId, MultipartFile file) throws Exception;
 }

@@ -15,10 +15,9 @@ public class AccountController {
 	private AccountService accountService;
 
 	@PostMapping("import-guest/{accountId}")
-	public String importGuest(@PathVariable Long accountId, MultipartFile file) {
+	public Object importGuest(@PathVariable Long accountId, MultipartFile file) {
 		try{
-			accountService.importGuests (accountId, file);
-			return "File successfully import";
+			return accountService.importGuests (accountId, file);
 		}catch (Exception e){
 			return "Error: " + e.getMessage();
 		}
