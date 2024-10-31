@@ -29,6 +29,9 @@ public class Guest extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private AttendenceStatus attendenceStatus;
 
+	@Column(length = 32)
+	private String specialNickname;
+
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn (name = "family_id")
 	private Familys family;
