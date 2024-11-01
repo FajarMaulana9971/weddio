@@ -6,4 +6,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface AccountService extends BaseService<Accounts, Long> {
 	Object importGuests(Long accountId, MultipartFile file) throws Exception;
+
+	Accounts getAccountByUsername(String username);
 }

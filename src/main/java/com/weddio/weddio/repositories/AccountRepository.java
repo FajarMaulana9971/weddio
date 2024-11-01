@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AccountRepository extends BaseRepository<Accounts, Long> {
+	Accounts findByUsername(String username);
 }

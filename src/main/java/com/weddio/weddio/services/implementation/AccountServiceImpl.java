@@ -6,6 +6,7 @@ import com.weddio.weddio.dto.responses.GuestNeighborResponse;
 import com.weddio.weddio.dto.responses.GuestResponse;
 import com.weddio.weddio.models.*;
 import com.weddio.weddio.models.enums.*;
+import com.weddio.weddio.repositories.AccountRepository;
 import com.weddio.weddio.repositories.GuestRepository;
 import com.weddio.weddio.services.implementation.base.BaseServiceImpl;
 import com.weddio.weddio.services.interfaces.AccountService;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class AccountServiceImpl extends BaseServiceImpl<Accounts, Long> implements AccountService {
 	private final ModelMapper modelMapper;
+	private final AccountRepository accountRepository;
 	private GuestRepository guestRepository;
 
 	private String getCellStringValue(Cell cell) {
@@ -33,6 +35,10 @@ public class AccountServiceImpl extends BaseServiceImpl<Accounts, Long> implemen
 		} else {
 			return cell.getStringCellValue();
 		}
+	}
+
+	public Accounts getAccountByUsername(String username){
+		return accountRepository.findByUsername (username);
 	}
 
 	public Object importGuests(Long accountId, MultipartFile file) throws Exception {
