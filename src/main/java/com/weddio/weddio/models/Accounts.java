@@ -18,9 +18,11 @@ import java.util.List;
 @Entity
 @Table(name = "tb_m_accounts")
 public class Accounts extends BaseEntity {
-	@Column(length = 64)
+
+	@Column(length = 32, unique = true, nullable = false)
 	private String username;
 
+	@Column(columnDefinition = "TEXT", nullable = false)
 	private String password;
 
 	@OneToMany(mappedBy = "account")

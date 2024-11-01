@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 @Table (name = "tb_m_guests")
 public class Guest extends BaseEntity {
 
+	@Column(unique = true)
 	private String name;
 
 	@Column(length = 32)
