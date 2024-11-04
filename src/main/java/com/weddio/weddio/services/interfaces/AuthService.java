@@ -1,4 +1,4 @@
 package com.weddio.weddio.services.interfaces;
 
-public class AuthService {
+public interface AuthService {
 }
