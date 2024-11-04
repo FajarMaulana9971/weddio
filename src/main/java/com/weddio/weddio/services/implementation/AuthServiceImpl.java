@@ -1,4 +1,10 @@
 package com.weddio.weddio.services.implementation;
 
-public class AuthServiceImpl {
+import com.weddio.weddio.services.interfaces.AuthService;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@AllArgsConstructor
+public class AuthServiceImpl implements AuthService {
 }
