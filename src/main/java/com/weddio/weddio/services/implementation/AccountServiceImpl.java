@@ -11,21 +11,25 @@ import com.weddio.weddio.repositories.GuestRepository;
 import com.weddio.weddio.services.implementation.base.BaseServiceImpl;
 import com.weddio.weddio.services.interfaces.AccountService;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AccountServiceImpl extends BaseServiceImpl<Accounts, Long> implements AccountService {
+	
 	private final ModelMapper modelMapper;
 	private final AccountRepository accountRepository;
-	private GuestRepository guestRepository;
+	private final GuestRepository guestRepository;
 
 	private String getCellStringValue(Cell cell) {
 		if (cell == null || cell.getCellType() == CellType.BLANK) {
@@ -38,7 +42,7 @@ public class AccountServiceImpl extends BaseServiceImpl<Accounts, Long> implemen
 	}
 
 	public Accounts getAccountByUsername(String username){
-		return accountRepository.findByUsername (username);
+		return accountRepository.findByUsername (username).orElseThrow (() -> new ResponseStatusException (HttpStatus.NOT_FOUND, "Account is not found"));
 	}
 
 	public Object importGuests(Long accountId, MultipartFile file) throws Exception {

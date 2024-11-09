@@ -10,4 +10,5 @@ import java.util.Optional;
 @Repository
 public interface AccountRepository extends BaseRepository<Accounts, Long> {
 	Optional<Accounts> findByUsername(@Param ("username") String username);
+
 }
