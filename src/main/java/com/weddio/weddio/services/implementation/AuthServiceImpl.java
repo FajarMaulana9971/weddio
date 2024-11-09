@@ -2,6 +2,7 @@ package com.weddio.weddio.services.implementation;
 
 import com.weddio.weddio.dto.requests.LoginRequest;
 import com.weddio.weddio.dto.responses.LoginResponse;
+import com.weddio.weddio.dto.responses.RegisterResponse;
 import com.weddio.weddio.models.Accounts;
 import com.weddio.weddio.repositories.AccountRepository;
 import com.weddio.weddio.services.interfaces.AuthService;
@@ -18,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -69,6 +71,30 @@ public class AuthServiceImpl implements AuthService {
 
 			return loginResponse;
 
+		}catch (ResponseStatusException e){
+			throw new ResponseStatusException (e.getStatusCode (), e.getReason ());
+		}
+	}
+
+	@Override
+	public RegisterResponse register(LoginRequest loginRequest) {
+		try{
+			Optional<Accounts> existAccount = accountRepository.findByUsername (loginRequest.getUsername ());
+
+			if(existAccount.isPresent ()){
+				throw new ResponseStatusException (HttpStatus.CONFLICT, "Account already exists");
+			}
+
+			Accounts accounts = new Accounts ();
+			accounts.setUsername (loginRequest.getUsername ());
+			accounts.setPassword (passwordEncoder.encode (loginRequest.getPassword ()));
+			accountRepository.save (accounts);
+
+			RegisterResponse registerResponse = new RegisterResponse ();
+			registerResponse.setId (accounts.getId ());
+			registerResponse.setUsername (loginRequest.getUsername ());
+			registerResponse.setPassword (loginRequest.getPassword ());
+			return registerResponse;
 		}catch (ResponseStatusException e){
 			throw new ResponseStatusException (e.getStatusCode (), e.getReason ());
 		}
