@@ -42,6 +42,18 @@ public class JwtUtil {
 		return claims.get ("id", String.class);
 	}
 
+	public String generateToken(String accessToken, String username) {
+		return createToken(accessToken, username);
+	}
+
+	public String generateToken(Map<String, Object> claims, String username) {
+		return createToken(claims, username);
+	}
+
+	public String generateRefreshToken(Map<String, Object> claims, String username) {
+		return createRefreshToken(claims, username);
+	}
+
 	public String createToken(Map<String, Object> claims, String subject){
 		return Jwts.builder ()
 				.setClaims (claims)
