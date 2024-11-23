@@ -1,6 +1,7 @@
 package com.weddio.weddio.services.implementation;
 
 import com.weddio.weddio.dto.requests.LoginRequest;
+import com.weddio.weddio.dto.requests.RegisterRequest;
 import com.weddio.weddio.dto.requests.ResetPasswordRequest;
 import com.weddio.weddio.dto.responses.LoginResponse;
 import com.weddio.weddio.dto.responses.RegisterResponse;
@@ -33,7 +34,6 @@ public class AuthServiceImpl implements AuthService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtUtil jwtUtil;
 
-	@Override
 	private Map<String, Object> createPayload(Accounts account) {
 		Map<String, Object> claims = new LinkedHashMap<> ();
 		claims.put("id", account.getId());
@@ -41,7 +41,6 @@ public class AuthServiceImpl implements AuthService {
 		return claims;
 	}
 
-	@Override
 	private void setTokenToCookie(String type, String token, HttpServletResponse response) {
 		ResponseCookie cookie = ResponseCookie.from(type, token)
 				.maxAge(604800)
@@ -53,7 +52,17 @@ public class AuthServiceImpl implements AuthService {
 		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 	}
 
-	@Override
+	private void clearTokenFromCookie(HttpServletResponse response) {
+		ResponseCookie accessCookie = ResponseCookie.fromClientResponse("accessToken", "")
+				.maxAge(0)
+				.sameSite("None")
+				.secure(true)
+				.path("/")
+				.httpOnly(true)
+				.build();
+		response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+	}
+
 	public LoginResponse login (LoginRequest loginRequest, HttpServletResponse response) {
 		try{
 			Accounts account = accountRepository.findByUsername (loginRequest.getUsername()).orElseThrow (() -> new ResponseStatusException (HttpStatus.NOT_FOUND, "Account is not found"));
@@ -62,16 +71,13 @@ public class AuthServiceImpl implements AuthService {
 				throw new ResponseStatusException (HttpStatus.UNAUTHORIZED, "Wrong password");
 			}
 
-			String accessToken = jwtUtil.generateToken (createPayload (account), account.getUsername());
-			String refreshToken = jwtUtil.generateRefreshToken (createPayload (account), account.getUsername());
-			String expiredToken = jwtUtil.extractExpiration (accessToken).toString ();
-
+			Map<String, Object> claims = createPayload(account);
+			String accessToken = jwtUtil.generateAccessToken (claims, account);
 			setTokenToCookie ("accessToken", accessToken, response);
-			setTokenToCookie ("refreshToken", refreshToken, response);
 
-			LoginResponse loginResponse = new LoginResponse (accessToken, refreshToken);
+			LoginResponse loginResponse = new LoginResponse ();
 			loginResponse.setToken (accessToken);
-			loginResponse.setTokenExpiration (expiredToken);
+			loginResponse.setTokenExpiration (jwtUtil.getExpirationDate (accessToken).toString ());
 
 			return loginResponse;
 
@@ -80,24 +86,30 @@ public class AuthServiceImpl implements AuthService {
 		}
 	}
 
-	@Override
-	public RegisterResponse register(LoginRequest loginRequest) {
+	public ResponseEntity<String> logout(String accessToken, HttpServletResponse response) {
+		if (accessToken != null) {
+			clearTokenFromCookie(response);
+		}
+		return ResponseEntity.ok("{\"message\":\"Logout success\"}");
+	}
+
+	public RegisterResponse register(RegisterRequest registerRequest) {
 		try{
-			Optional<Accounts> existAccount = accountRepository.findByUsername (loginRequest.getUsername ());
+			Optional<Accounts> existAccount = accountRepository.findByUsername (registerRequest.getUsername ());
 
 			if(existAccount.isPresent ()){
 				throw new ResponseStatusException (HttpStatus.CONFLICT, "Account already exists");
 			}
 
 			Accounts accounts = new Accounts ();
-			accounts.setUsername (loginRequest.getUsername ());
-			accounts.setPassword (passwordEncoder.encode (loginRequest.getPassword ()));
+			accounts.setUsername (registerRequest.getUsername ());
+			accounts.setPassword (passwordEncoder.encode (registerRequest.getPassword ()));
 			accountRepository.save (accounts);
 
 			RegisterResponse registerResponse = new RegisterResponse ();
 			registerResponse.setId (accounts.getId ());
-			registerResponse.setUsername (loginRequest.getUsername ());
-			registerResponse.setPassword (loginRequest.getPassword ());
+			registerResponse.setUsername (registerRequest.getUsername ());
+			registerResponse.setPassword (registerRequest.getPassword ());
 			return registerResponse;
 		}catch (ResponseStatusException e){
 			throw new ResponseStatusException (e.getStatusCode (), e.getReason ());
