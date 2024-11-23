@@ -35,6 +35,7 @@ public class GuestController {
 			@RequestParam(defaultValue = "10") int pageSize,
 			UriComponentsBuilder uriBuilder
 	) {
+		System.out.println ("masuk sini");
 		return guestService.getAllGuestByFilter(
 				name, familyFrom, friendType, searchType, currentPage, pageSize, uriBuilder
 		);
